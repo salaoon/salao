@@ -1,0 +1,8 @@
+[build]
+  command = "pnpm install && pnpm run build"
+  publish = "dist/public"
+
+[build.environment]
+  PORT = "5173"
+  BASE_PATH = "/"
+  NODE_VERSION = "20"

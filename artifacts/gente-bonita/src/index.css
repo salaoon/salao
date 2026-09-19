@@ -97,11 +97,20 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
 }
 
-.gb-reveal { animation: gb-reveal .8s cubic-bezier(.2,.7,.2,1) both; }
-.gb-reveal-delay { animation-delay: .12s; }
-.gb-reveal-delay-2 { animation-delay: .22s; }
-.gb-reveal-delay-3 { animation-delay: .35s; }
-@keyframes gb-reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+.gb-reveal { 
+  opacity: 0; 
+  transform: translateY(24px); 
+  filter: blur(8px); 
+  transition: opacity 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); 
+}
+.gb-reveal.is-visible { 
+  opacity: 1; 
+  transform: translateY(0); 
+  filter: blur(0); 
+}
+.gb-reveal-delay { transition-delay: 0.15s; }
+.gb-reveal-delay-2 { transition-delay: 0.3s; }
+.gb-reveal-delay-3 { transition-delay: 0.45s; }
 
 .gb-nav-link { position: relative; color: hsl(var(--muted-foreground)); transition: color .25s ease; }
 .gb-nav-link::after { content: ''; position: absolute; left: 0; right: 100%; bottom: -8px; height: 1px; background: hsl(var(--primary)); transition: right .25s ease; }
@@ -134,9 +143,9 @@
 .gb-field:focus { border-color: hsl(9 62% 76%); background: hsl(345 22% 6% / .98); box-shadow: 0 0 0 3px hsl(9 62% 70% / .18), 0 0 22px hsl(9 62% 66% / .13); }
 .gb-field option { background: hsl(345 17% 9%); color: hsl(33 42% 96%); }
 .gb-input-label { display: block; margin-bottom: 8px; color: hsl(345 35% 18%); font: 700 10px/1 var(--app-font-mono); letter-spacing: .14em; text-transform: uppercase; }
-.gb-service-choice { display: flex; min-height: 43px; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid hsl(344 24% 32% / .5); border-radius: 6px; padding: 0 11px; color: hsl(345 35% 16%); cursor: pointer; font-size: 12px; font-weight: 600; transition: border-color .2s ease, background-color .2s ease, color .2s ease, transform .2s ease; }
-.gb-service-choice:hover { transform: translateY(-1px); border-color: hsl(9 62% 54% / .7); background: hsl(9 62% 66% / .12); }
-.gb-service-choice-selected { border-color: hsl(9 62% 45% / .82); background: hsl(9 62% 66% / .2); color: hsl(345 30% 18%); box-shadow: 0 0 0 1px hsl(9 62% 66% / .12), 0 6px 18px hsl(345 30% 14% / .08); }
+.gb-service-choice { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid hsl(345 22% 16%); border-bottom-width: 3px; border-radius: 8px; padding: 0 14px; background: linear-gradient(180deg, hsl(345 22% 12%), hsl(345 22% 6%)); color: hsl(33 42% 96%); cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05); transition: all .2s cubic-bezier(0.4, 0, 0.2, 1); }
+.gb-service-choice:hover { transform: translateY(-2px); border-color: hsl(9 62% 50%); background: linear-gradient(180deg, hsl(345 22% 14%), hsl(345 22% 8%)); box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+.gb-service-choice-selected { transform: translateY(1px) !important; border-color: hsl(9 62% 60%); border-bottom-width: 1px; margin-top: 2px; background: hsl(345 22% 4%); color: hsl(9 62% 80%); box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 0 1px hsl(9 62% 45% / .5); }
 
 .gb-whatsapp { position: fixed; z-index: 45; right: 24px; bottom: 24px; display: flex; align-items: center; gap: 10px; border: 1px solid hsl(var(--primary) / .7); background: hsl(345 22% 11% / .88); color: hsl(var(--foreground)); box-shadow: var(--shadow-md); backdrop-filter: blur(12px); transition: transform .25s ease, background-color .25s ease; }
 .gb-whatsapp:hover { transform: translateY(-3px); background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
@@ -155,3 +164,14 @@
   .gb-whatsapp { right: 16px; bottom: 16px; width: 48px; height: 48px; padding: 0; border-radius: 50%; justify-content: center; }
   .gb-whatsapp span { display: none; }
 }
+@keyframes gb-pulse-float {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 4px 20px hsl(345 40% 3% / 0);
+  }
+  50% {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px hsl(9 62% 66% / 0.08);
+  }
+}
+

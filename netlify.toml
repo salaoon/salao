@@ -1,0 +1,9 @@
+[build]
+  base = "artifacts/gente-bonita"
+  command = "npm install -g pnpm && pnpm install && pnpm run build"
+  publish = "artifacts/gente-bonita/dist/public"
+
+[build.environment]
+  PORT = "5173"
+  BASE_PATH = "/"
+  NODE_VERSION = "20"
