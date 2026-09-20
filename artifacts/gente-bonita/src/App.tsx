@@ -295,7 +295,7 @@ function Booking({ selectedServices, onClearSelection }: { selectedServices: str
            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#24161d]/35"><Check size={26} /></div>
            <p className="gb-eyebrow mt-8 text-[#6b3c3e]">Pedido recebido</p>
            <h2 className="gb-display mt-5 text-5xl leading-none md:text-7xl">Seu momento começa<br /><em>agora.</em></h2>
-           <p className="mx-auto mt-7 max-w-md text-[15px] leading-7 text-[#4d2a2d]">Recebemos seu pedido de agendamento. Em breve, entraremos em contato pelo WhatsApp para confirmar os detalhes com todo o cuidado.</p>
+           <p className="mx-auto mt-7 max-w-md text-[15px] leading-7 text-[#4d2a2d]">Confirme seu agendamento no botão abaixo e nos encaminhe o seu pedido.</p>
            <a href={whatsappUrl} target="_blank" rel="noreferrer" className="gb-button mt-9 inline-flex justify-center border-[#754447] text-[#5b3032] hover:bg-[#754447] hover:text-[#f2d9d0]" data-testid="button-confirm-whatsapp">Confirmar</a>
          </div>
        </div>
