@@ -107,7 +107,11 @@ function Hero() {
  <div className="gb-luxe-glow absolute -left-24 top-24 h-72 w-72 rounded-full" />
  <Sparkles className="gb-sparkle absolute right-[22%] top-[22%] h-5 w-5 text-[#e4a49a]" />
  <div className="absolute inset-y-0 right-0 w-full md:w-[58%]">
- <img src={config?.heroImage || "/images/hero-beauty.jpg"} alt="Mulher com cabelo acobreado em retrato editorial" className="h-full w-full object-cover object-[56%_center] opacity-90 mix-blend-screen" />
+ {config?.heroImage ? (
+   <img src={config.heroImage} alt="Mulher com cabelo acobreado em retrato editorial" className="h-full w-full object-cover object-[56%_center] opacity-90 mix-blend-screen" />
+ ) : (
+   <div className="h-full w-full bg-[#080709] opacity-90" />
+ )}
  <div className="absolute inset-0 bg-gradient-to-r from-[#080709] via-[#080709]/45 to-transparent" />
  <div className="absolute inset-0 bg-gradient-to-t from-[#080709] via-transparent to-[#080709]/20" />
  </div>
@@ -125,9 +129,7 @@ function Hero() {
 
 function Services({ onSelect }: { onSelect: (service: string) => void }) {
  const { data: dynamicServices } = useServices();
- const servicesList = dynamicServices && dynamicServices.length > 0 
- ? dynamicServices.filter((s: any) => s.ativo !== false) 
- : SERVICES;
+ const servicesList = dynamicServices ? dynamicServices.filter((s: any) => s.ativo !== false) : [];
 
  return (
  <section id="servicos" className="scroll-mt-6 bg-[#080709] py-16 md:py-20">
@@ -170,7 +172,11 @@ function MegaHair({ onSelect }: { onSelect: (service: string) => void }) {
  <div className="gb-shell grid items-center gap-10 md:grid-cols-[.9fr_1.1fr] md:gap-16">
  <div className="relative order-2 md:order-1 gb-reveal">
  <div className="absolute -left-4 -top-4 h-full w-full border border-[#b86665]/30 md:-left-7 md:-top-7" />
- <img src={config?.megaHairImage || "/images/mega-hair.jpg"} alt="Detalhe de fios longos com reflexos quentes" className="relative h-[300px] w-full object-cover md:h-[460px]" />
+ {config?.megaHairImage ? (
+   <img src={config.megaHairImage} alt="Detalhe de fios longos com reflexos quentes" className="relative h-[300px] w-full object-cover md:h-[460px]" />
+ ) : (
+   <div className="relative h-[300px] w-full bg-[#100c10] md:h-[460px]" />
+ )}
  <span className="absolute -bottom-5 -right-4 flex h-24 w-24 items-center justify-center rounded-full border border-[#d68c80]/55 bg-[#100c10] text-center font-mono text-[9px] uppercase leading-4 tracking-[.1em] text-[#df9587] md:-right-8">O seu<br />novo<br />movimento</span>
  </div>
  <div className="order-1 md:order-2 gb-reveal gb-reveal-delay">
@@ -207,7 +213,7 @@ function About() {
 
 function Gallery() {
  const { data: dynamicGallery } = useGallery();
- const galleryList = dynamicGallery && dynamicGallery.length > 0 ? dynamicGallery : GALLERY_ITEMS;
+ const galleryList = dynamicGallery || [];
 
  return (
  <section id="galeria" className="scroll-mt-6 bg-[#080709] py-20 md:py-24">
@@ -254,9 +260,7 @@ function Booking({ selectedServices, onClearSelection }: { selectedServices: str
 
  const { data: config } = useSiteConfig();
  const { data: dynamicServices } = useServices();
- const servicesList = dynamicServices && dynamicServices.length > 0 
- ? dynamicServices.filter((s: any) => s.ativo !== false) 
- : SERVICES;
+ const servicesList = dynamicServices ? dynamicServices.filter((s: any) => s.ativo !== false) : [];
  const contacts = { ...CONTACTS, ...config };
 
  function updateField(field: Exclude<keyof BookingForm, 'services'>, value: string) {
@@ -280,19 +284,23 @@ function Booking({ selectedServices, onClearSelection }: { selectedServices: str
  setSubmitted(true);
  }
  if (submitted) {
- return (
- <section id="agendamento" className="scroll-mt-6 bg-[#d68c80] py-20 text-[#24161d] md:py-24">
- <div className="gb-shell">
- <div className="mx-auto max-w-2xl text-center">
- <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#24161d]/35"><Check size={26} /></div>
- <p className="gb-eyebrow mt-8 text-[#6b3c3e]">Pedido recebido</p>
- <h2 className="gb-display mt-5 text-5xl leading-none md:text-7xl">Seu momento começa<br /><em>agora.</em></h2>
- <p className="mx-auto mt-7 max-w-md text-[15px] leading-7 text-[#4d2a2d]">Recebemos seu pedido de agendamento. Em breve, entraremos em contato pelo WhatsApp para confirmar os detalhes com todo o cuidado.</p>
- <button type="button" onClick={() => { setSubmitted(false); onClearSelection(); }} className="gb-button mt-9 border-[#754447] text-[#5b3032] hover:bg-[#754447] hover:text-[#f2d9d0]" data-testid="button-new-booking">Fazer novo pedido</button>
- </div>
- </div>
- </section>
- );
+   const dateStr = form.date ? form.date.split('-').reverse().join('/') : '';
+   const whatsappMessage = encodeURIComponent(`Olá! Gostaria de confirmar meu agendamento:\n\n*Nome:* ${form.name}\n*Contato:* ${form.whatsapp}\n*Serviço(s):* ${form.services.join(', ')}\n*Data:* ${dateStr}\n*Horário:* ${form.time}${form.observations ? `\n*Observações:* ${form.observations}` : ''}`);
+   const whatsappUrl = `https://wa.me/${contacts.whatsappNumber}?text=${whatsappMessage}`;
+
+   return (
+     <section id="agendamento" className="scroll-mt-6 bg-[#d68c80] py-20 text-[#24161d] md:py-24">
+       <div className="gb-shell">
+         <div className="mx-auto max-w-2xl text-center">
+           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#24161d]/35"><Check size={26} /></div>
+           <p className="gb-eyebrow mt-8 text-[#6b3c3e]">Pedido recebido</p>
+           <h2 className="gb-display mt-5 text-5xl leading-none md:text-7xl">Seu momento começa<br /><em>agora.</em></h2>
+           <p className="mx-auto mt-7 max-w-md text-[15px] leading-7 text-[#4d2a2d]">Recebemos seu pedido de agendamento. Em breve, entraremos em contato pelo WhatsApp para confirmar os detalhes com todo o cuidado.</p>
+           <a href={whatsappUrl} target="_blank" rel="noreferrer" className="gb-button mt-9 inline-flex justify-center border-[#754447] text-[#5b3032] hover:bg-[#754447] hover:text-[#f2d9d0]" data-testid="button-confirm-whatsapp">Confirmar</a>
+         </div>
+       </div>
+     </section>
+   );
  }
  return (
  <section id="agendamento" className="scroll-mt-6 bg-[#d68c80] py-20 text-[#24161d] md:py-24">
