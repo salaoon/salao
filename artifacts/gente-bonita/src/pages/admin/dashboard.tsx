@@ -417,38 +417,23 @@ function ServicesList({ services, onSuccess }: { services: any[], onSuccess: () 
     setSaving(true);
 
     const promises = data.map(service => {
+      // Create a clean payload without 'ativo' since it doesn't exist in the DB schema
+      const { id, ativo, ...cleanService } = service;
 
-      // Se não tem ID, é um serviço novo, então usamos insert sem o campo id
-
-      if (!service.id) {
-
-        return supabase.from('servicos').insert({
-
-          titulo: service.titulo,
-
-          detalhe: service.detalhe,
-
-          descricao: service.descricao,
-
-          icone: service.icone,
-
-          numero: service.numero,
-
-          ativo: service.ativo !== false,
-
-          ordem: service.ordem
-
-        });
-
+      if (!id) {
+        return supabase.from('servicos').insert(cleanService);
       }
-
-      return supabase.from('servicos').update(service).eq('id', service.id);
-
+      return supabase.from('servicos').update(cleanService).eq('id', id);
     });
 
-    
-
-    await Promise.all(promises);
+    const results = await Promise.all(promises);
+    const errors = results.filter(r => r.error).map(r => r.error);
+    if (errors.length > 0) {
+      console.error(errors);
+      toast({ title: 'Erro ao salvar', description: errors[0].message, variant: 'destructive' });
+      setSaving(false);
+      return;
+    }
 
     setSaving(false);
 
