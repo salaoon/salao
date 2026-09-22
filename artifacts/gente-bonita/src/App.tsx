@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ArrowDown, ArrowUpRight, Brush, Check, ChevronRight, Clock3, Crown, Eye, Gem, Instagram, Menu, MessageCircle, Palette, Scissors, Sparkles, X } from 'lucide-react';
 import NotFound from '@/pages/not-found';
+import PromoCombos from '@/components/promo-combos';
 import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import { useSiteConfig, useServices, useGallery } from '@/hooks/use-site-data';
 import * as LucideIcons from 'lucide-react';
@@ -140,7 +141,7 @@ function Services({ onSelect }: { onSelect: (service: string) => void }) {
  <div className="mt-9 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 gb-reveal gb-reveal-delay">
  {servicesList.map((service: any, index: number) => {
  const iconName = (service.icone || service.icon) as keyof typeof LucideIcons;
- const Icon = LucideIcons[iconName] || LucideIcons.Sparkles;
+ const Icon = (LucideIcons[iconName] || LucideIcons.Sparkles) as any;
  return (
  <button 
  type="button" 
@@ -183,7 +184,37 @@ function MegaHair({ onSelect }: { onSelect: (service: string) => void }) {
  <h2 className="gb-display text-5xl leading-[.95] md:text-7xl">Cabelos que<br /><em className="text-[#a75b58]">contam você.</em></h2>
  <p className="mt-6 max-w-[480px] text-[15px] leading-7 text-[#c9b5b3]">Mega Hair para transformar o espelho sem perder a naturalidade. A escolha dos fios, a técnica e o acabamento são pensados para que o resultado pareça e se sinta seu.</p>
  <p className="mt-5 max-w-[480px] text-[15px] leading-7 text-[#c9b5b3]">Um novo comprimento. Um novo movimento. A mesma você, mais extraordinária.</p>
- <button type="button" onClick={() => onSelect('Mega Hair')} className="gb-button mt-9 border-[#df9587] text-[#df9587] hover:bg-[#df9587] hover:text-[#100c10]" data-testid="button-mega-hair-booking">Conversar sobre Mega Hair <ArrowUpRight size={16} /></button>
+ </div>
+ </div>
+ </section>
+ );
+}
+
+function Cilios({ onSelect }: { onSelect: (service: string) => void }) {
+ const { data: config } = useSiteConfig();
+ const { data: dynamicServices } = useServices();
+ const ciliosService = dynamicServices?.find((s: any) => 
+   (s.titulo || s.title || '').toLowerCase().includes('cílios') || 
+   (s.titulo || s.title || '').toLowerCase().includes('cilios')
+ );
+ const serviceName = ciliosService ? (ciliosService.titulo || ciliosService.title) : 'Make & beleza';
+
+ return (
+ <section id="cilios" className="scroll-mt-6 bg-[#100c10] py-16 text-[#f9eee7] md:py-20 border-t border-[#f9eee7]/10">
+ <div className="gb-shell grid items-center gap-10 md:grid-cols-[1.1fr_.9fr] md:gap-16">
+ <div className="gb-reveal">
+ <h2 className="gb-display text-5xl leading-[.95] md:text-7xl">Olhares que<br /><em className="text-[#a75b58]">marcam presença.</em></h2>
+ <p className="mt-6 max-w-[480px] text-[15px] leading-7 text-[#c9b5b3]">Extensão de cílios desenhada para valorizar o seu formato de olho de maneira sutil, elegante e marcante.</p>
+ <p className="mt-5 max-w-[480px] text-[15px] leading-7 text-[#c9b5b3]">Fios levemente curvados, volume na medida certa e conforto absoluto durante e após a aplicação.</p>
+ </div>
+ <div className="relative gb-reveal gb-reveal-delay">
+ <div className="absolute -right-4 -top-4 h-full w-full border border-[#b86665]/30 md:-right-7 md:-top-7" />
+ {config?.ciliosImage ? (
+   <img src={config.ciliosImage} alt="Detalhe de extensão de cílios" className="relative h-[300px] w-full object-cover md:h-[460px]" />
+ ) : (
+   <div className="relative h-[300px] w-full bg-[#100c10] md:h-[460px]" />
+ )}
+ <span className="absolute -bottom-5 -left-4 flex h-24 w-24 items-center justify-center rounded-full border border-[#d68c80]/55 bg-[#100c10] text-center font-mono text-[9px] uppercase leading-4 tracking-[.1em] text-[#df9587] md:-left-8">Seu olhar<br />em<br />destaque</span>
  </div>
  </div>
  </section>
@@ -296,7 +327,7 @@ function Booking({ selectedServices, onClearSelection }: { selectedServices: str
            <p className="gb-eyebrow mt-8 text-[#6b3c3e]">Pedido recebido</p>
            <h2 className="gb-display mt-5 text-5xl leading-none md:text-7xl">Seu momento começa<br /><em>agora.</em></h2>
            <p className="mx-auto mt-7 max-w-md text-[15px] leading-7 text-[#4d2a2d]">Confirme seu agendamento no botão abaixo e nos encaminhe o seu pedido.</p>
-           <a href={whatsappUrl} target="_blank" rel="noreferrer" className="gb-button mt-9 inline-flex justify-center border-[#754447] text-[#5b3032] hover:bg-[#754447] hover:text-[#f2d9d0]" data-testid="button-confirm-whatsapp">Confirmar</a>
+           <a href={whatsappUrl} target="_blank" rel="noreferrer" className="gb-button mt-9 inline-flex justify-center bg-[#24161d] text-[#f2d9d0] border-transparent shadow-[0_5px_0_#110a0e] hover:bg-[#38222d] hover:shadow-[0_7px_0_#110a0e] active:shadow-[0_0px_0_#110a0e] active:translate-y-[5px]" data-testid="button-confirm-whatsapp">Confirmar</a>
          </div>
        </div>
      </section>
@@ -333,10 +364,10 @@ function Booking({ selectedServices, onClearSelection }: { selectedServices: str
  </div>
  {serviceError && <p className="mt-2 text-xs text-[#713e42]" role="alert">Escolha pelo menos um serviço para continuar.</p>}
  </div>
- </div>
- <div className="grid gap-5 sm:grid-cols-2">
+ <div className="grid gap-5">
  <label><span className="gb-input-label text-[#3a1c20]">Data desejada</span><input required type="date" value={form.date} onChange={(event) => updateField('date', event.target.value)} className="gb-field text-[#f9eee7]" data-testid="input-booking-date" /></label>
  <label><span className="gb-input-label text-[#3a1c20]">Horário desejado</span><input required type="time" value={form.time} onChange={(event) => updateField('time', event.target.value)} className="gb-field text-[#f9eee7]" data-testid="input-booking-time" /></label>
+ </div>
  </div>
  <label><span className="gb-input-label text-[#3a1c20]">Observações</span><textarea value={form.observations} onChange={(event) => updateField('observations', event.target.value)} className="gb-field min-h-[110px] resize-y text-[#f9eee7] placeholder:text-[#ead4cc]" placeholder="Tem algo que gostaria de nos contar?" data-testid="textarea-booking-observations" /></label>
  <button type="submit" className="gb-button mt-2 w-full border-[#080709] bg-[#080709] text-[#f2d9d0] hover:bg-[#45272e] sm:w-fit" data-testid="button-submit-booking">Enviar pedido de agendamento <ArrowUpRight size={16} /></button>
@@ -439,7 +470,7 @@ function Home() {
  const contacts = { ...CONTACTS, ...config };
 
  function selectService(service: string) {
- setSelectedServices((current) => current.includes(service) ? current : [...current, service]);
+ setSelectedServices([service]);
  document.getElementById('agendamento')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
  window.history.replaceState(null, '', '#agendamento');
  }
@@ -448,10 +479,12 @@ function Home() {
  <Header />
  <main>
  <Hero />
+ <PromoCombos />
  <Services onSelect={selectService} />
  <MegaHair onSelect={selectService} />
  <About />
  <Gallery />
+ <Cilios onSelect={selectService} />
  <Booking key={selectedServices.join('|')} selectedServices={selectedServices} onClearSelection={() => setSelectedServices([])} />
  <InstagramCta />
  </main>

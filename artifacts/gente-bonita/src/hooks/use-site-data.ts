@@ -34,3 +34,14 @@ export function useGallery() {
     }
   });
 }
+
+export function useCombos() {
+  return useQuery({
+    queryKey: ['combos_promo'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('combos_promo').select('*').order('ordem');
+      if (error) throw error;
+      return data;
+    }
+  });
+}

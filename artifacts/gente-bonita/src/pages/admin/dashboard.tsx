@@ -14,11 +14,11 @@ import { Label } from '@/components/ui/label';
 
 import { Textarea } from '@/components/ui/textarea';
 
-import { LogOut, Save, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
+import { LogOut, Save, Plus, Trash2, Eye, EyeOff, Image, ToggleLeft, ToggleRight } from 'lucide-react';
 
 import { useToast } from '@/hooks/use-toast';
 
-import { useSiteConfig, useServices, useGallery } from '@/hooks/use-site-data';
+import { useSiteConfig, useServices, useGallery, useCombos } from '@/hooks/use-site-data';
 
 
 
@@ -49,9 +49,9 @@ function SitePhotosManager() {
   return (
     <div className="bg-[#111014] p-6 rounded-lg border border-[#f9eee7]/15 mt-8">
       <h2 className="text-xl mb-4 text-[#df9587]">Fotos Principais</h2>
-      <p className="text-sm text-[#a99594] mb-6">Altere a Foto da Hero e a foto do Mega Hair.</p>
+      <p className="text-sm text-[#a99594] mb-6">Altere a Foto da Hero, do Mega Hair e dos Cílios.</p>
       
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-3">
         <div>
           <Label className="text-[#d1bbb6] mb-2 block">Foto da Hero</Label>
           <Input type="file" accept="image/png, image/jpeg" className="bg-[#080709] border-[#f9eee7]/20 text-[#f9eee7] cursor-pointer" onChange={(e) => {
@@ -68,6 +68,15 @@ function SitePhotosManager() {
             if (file) handleUpload('megaHairImage', file);
           }} />
           {config?.megaHairImage && <img src={config.megaHairImage} alt="Mega Hair" className="mt-3 h-32 w-auto rounded border border-[#f9eee7]/20 object-cover" />}
+        </div>
+
+        <div>
+          <Label className="text-[#d1bbb6] mb-2 block">Foto dos Cílios</Label>
+          <Input type="file" accept="image/png, image/jpeg" className="bg-[#080709] border-[#f9eee7]/20 text-[#f9eee7] cursor-pointer" onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleUpload('ciliosImage', file);
+          }} />
+          {config?.ciliosImage && <img src={config.ciliosImage} alt="Cílios" className="mt-3 h-32 w-auto rounded border border-[#f9eee7]/20 object-cover" />}
         </div>
       </div>
     </div>
@@ -88,7 +97,7 @@ export default function AdminDashboard() {
 
   const servicesQuery = useServices();
 
-
+  const combosQuery = useCombos();
 
   useEffect(() => {
 
@@ -182,7 +191,7 @@ export default function AdminDashboard() {
 
             <TabsTrigger value="galeria">Galeria</TabsTrigger>
 
-          </TabsList>
+            <TabsTrigger value="combos">Combos</TabsTrigger>          </TabsList>
 
 
 
@@ -249,6 +258,22 @@ export default function AdminDashboard() {
             </div>
 
             <SitePhotosManager />
+
+          </TabsContent>
+
+          <TabsContent value="combos" className="mt-6">
+
+            <div className="bg-[#111014] p-6 rounded-lg border border-[#f9eee7]/15">
+
+              <div className="flex items-center justify-between mb-4">
+
+                <h2 className="text-xl text-[#df9587]">Combos Promocionais</h2>
+
+              </div>
+
+              <CombosManager config={configQuery.data || {}} combos={combosQuery.data || []} onSuccess={() => { configQuery.refetch(); combosQuery.refetch(); }} />
+
+            </div>
 
           </TabsContent>
 
@@ -430,7 +455,7 @@ function ServicesList({ services, onSuccess }: { services: any[], onSuccess: () 
     const errors = results.filter(r => r.error).map(r => r.error);
     if (errors.length > 0) {
       console.error(errors);
-      toast({ title: 'Erro ao salvar', description: errors[0].message, variant: 'destructive' });
+      toast({ title: 'Erro ao salvar', description: errors[0]?.message, variant: 'destructive' });
       setSaving(false);
       return;
     }
@@ -829,3 +854,190 @@ function GalleryList({ items, onSuccess }: { items: any[], onSuccess: () => void
 
 
 
+function CombosManager({ config, combos, onSuccess }: { config: Record<string, string>; combos: any[]; onSuccess: () => void }) {
+  const { toast } = useToast();
+  const [visible, setVisible] = useState(config?.combosVisiveis === 'true');
+  const [data, setData] = useState(combos);
+  const [saving, setSaving] = useState(false);
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+
+  useEffect(() => { setData(combos); }, [combos]);
+  useEffect(() => { setVisible(config?.combosVisiveis === 'true'); }, [config?.combosVisiveis]);
+
+  const handleToggleVisibility = async () => {
+    const newVal = !visible;
+    setVisible(newVal);
+    await supabase.from('configuracoes').upsert({ id: 'combosVisiveis', valor: String(newVal) });
+    toast({ title: newVal ? 'Seção de combos visível no site' : 'Seção de combos oculta do site' });
+    onSuccess();
+  };
+
+  const handleChange = (index: number, field: string, value: any) => {
+    const updated = [...data];
+    updated[index] = { ...updated[index], [field]: value };
+    setData(updated);
+  };
+
+  const handleAdd = () => {
+    setData([...data, { titulo: '', descricao: '', imagem_url: '', ativo: true, ordem: data.length + 1 }]);
+  };
+
+  const handleDelete = async (index: number, id?: string) => {
+    if (!confirm('Tem certeza que deseja excluir este combo?')) return;
+    if (id) {
+      await supabase.from('combos_promo').delete().eq('id', id);
+    }
+    const updated = [...data];
+    updated.splice(index, 1);
+    setData(updated);
+    toast({ title: 'Combo removido.' });
+    if (id) onSuccess();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingIdx(index);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `combo-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('fotos').upload(fileName, file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('fotos').getPublicUrl(fileName);
+      handleChange(index, 'imagem_url', publicUrl);
+      toast({ title: 'Foto enviada com sucesso!' });
+    } catch (err: any) {
+      toast({ title: 'Erro no upload', description: err.message, variant: 'destructive' });
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    const promises = data.map(item => {
+      const payload = {
+        titulo: item.titulo,
+        descricao: item.descricao,
+        imagem_url: item.imagem_url,
+        ativo: item.ativo,
+        ordem: item.ordem,
+      };
+      if (!item.id) {
+        return supabase.from('combos_promo').insert(payload);
+      }
+      return supabase.from('combos_promo').update(payload).eq('id', item.id);
+    });
+    const results = await Promise.all(promises);
+    const errors = results.filter(r => r.error).map(r => r.error);
+    if (errors.length > 0) {
+      console.error(errors);
+      toast({ title: 'Erro ao salvar', description: errors[0]?.message, variant: 'destructive' });
+      setSaving(false);
+      return;
+    }
+    setSaving(false);
+    toast({ title: 'Combos salvos com sucesso!' });
+    onSuccess();
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Toggle de visibilidade global */}
+      <div className="flex items-center justify-between p-4 rounded-lg border border-[#f9eee7]/10 bg-[#080709]">
+        <div>
+          <p className="text-sm font-medium text-[#f9eee7]">Seção visível no site</p>
+          <p className="text-xs text-[#a99594] mt-1">Quando ativada, a seção de combos aparece entre a Hero e os Serviços.</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleToggleVisibility}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-colors ${visible ? 'bg-[#df9587] text-[#080709]' : 'bg-[#1a1a1a] text-[#a99594] border border-[#f9eee7]/20'}`}
+        >
+          {visible ? <><ToggleRight size={16} /> Visível</> : <><ToggleLeft size={16} /> Oculta</>}
+        </button>
+      </div>
+
+      {/* Lista de combos */}
+      {data.map((combo, idx) => (
+        <div key={combo.id || `new-combo-${idx}`} className={`p-4 border ${combo.ativo === false ? 'border-red-500/30 bg-[#1a0f12]' : 'border-[#f9eee7]/10 bg-[#080709]'} rounded-lg space-y-4 transition-colors`}>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-semibold text-[#a99594] flex items-center gap-2">
+              Combo #{idx + 1}
+              {combo.ativo === false && <span className="text-red-400 text-xs px-2 py-0.5 bg-red-900/30 rounded">(Oculto)</span>}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 border-[#f9eee7]/20 text-[#a99594] hover:text-[#f9eee7] hover:bg-[#2a2a2a]"
+                onClick={() => handleChange(idx, 'ativo', combo.ativo === false ? true : false)}
+                title={combo.ativo === false ? 'Ativar combo' : 'Desativar combo'}
+              >
+                {combo.ativo === false ? <EyeOff size={16} /> : <Eye size={16} />}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-8"
+                onClick={() => handleDelete(idx, combo.id)}
+              >
+                <Trash2 size={16} />
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Imagem */}
+            <div className="space-y-3">
+              <div className="aspect-video bg-[#111014] rounded overflow-hidden relative flex items-center justify-center border border-[#f9eee7]/10">
+                {combo.imagem_url ? (
+                  <img src={combo.imagem_url} alt="preview" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-[#a99594]">
+                    <Image size={24} />
+                    <span className="text-xs">Sem imagem</span>
+                  </div>
+                )}
+                {uploadingIdx === idx && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-xs">
+                    Enviando...
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label className="text-[#d1bbb6] text-xs">Enviar Foto (PNG ou JPG)</Label>
+                <Input type="file" accept="image/png, image/jpeg" onChange={(e) => handleFileChange(e, idx)} className="bg-[#111014] border-[#f9eee7]/20 text-[#f9eee7] text-xs h-8" />
+              </div>
+            </div>
+
+            {/* Título + Descrição */}
+            <div className="space-y-4">
+              <div>
+                <Label className="text-[#d1bbb6]">Título do Combo</Label>
+                <Input className="bg-[#111014] border-[#f9eee7]/20 text-[#f9eee7]" value={combo.titulo || ''} onChange={e => handleChange(idx, 'titulo', e.target.value)} placeholder="Ex: Combo Verão Brilhante" />
+              </div>
+              <div>
+                <Label className="text-[#d1bbb6]">Descrição</Label>
+                <Textarea className="bg-[#111014] border-[#f9eee7]/20 text-[#f9eee7] min-h-[120px]" value={combo.descricao || ''} onChange={e => handleChange(idx, 'descricao', e.target.value)} placeholder="Descreva o que inclui no combo, preço, condições..." />
+              </div>
+              <div>
+                <Label className="text-[#d1bbb6]">Ordem</Label>
+                <Input type="number" className="bg-[#111014] border-[#f9eee7]/20 text-[#f9eee7] h-8" value={combo.ordem || 0} onChange={e => handleChange(idx, 'ordem', parseInt(e.target.value))} />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <div className="flex justify-between items-center pt-4 border-t border-[#f9eee7]/10">
+        <Button onClick={handleAdd} variant="outline" className="border-[#f9eee7]/20 text-[#f9eee7] hover:bg-[#f9eee7]">
+          <Plus className="mr-2 h-4 w-4" /> Adicionar Combo
+        </Button>
+        <Button onClick={handleSave} disabled={saving} className="bg-[#d68c80] text-[#24161d] hover:bg-[#df9587]">
+          <Save className="mr-2 h-4 w-4" /> {saving ? 'Salvando...' : 'Salvar Combos'}
+        </Button>
+      </div>
+    </div>
+  );
+}
